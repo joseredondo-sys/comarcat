@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ca">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Comarcat · Aprèn les comarques de Catalunya</title>
+  <meta name="description" content="Joc interactiu per aprendre les províncies, comarques i capitals de Catalunya. Sis maneres de jugar, per a mòbil, tauleta i ordinador.">
+  <meta name="theme-color" content="#1d3557">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <button class="brand" data-go="home" aria-label="Inici">
+      <img src="icon.svg" alt="" width="34" height="34">
+      <span>Comarcat</span>
+    </button>
+    <div class="topbar-right">
+      <div class="xp" title="Experiència">
+        <span class="xp-level" id="xpLevel">1</span>
+        <span class="xp-bar"><i id="xpFill"></i></span>
+      </div>
+      <button class="icon-btn" id="btnSound" aria-label="So">🔊</button>
+      <button class="icon-btn lang" id="btnLang" aria-label="Idioma">ES</button>
+    </div>
+  </header>
+
+  <!-- INICI -->
+  <main id="home" class="screen active">
+    <section class="hero">
+      <h1 data-t="heroTitle"></h1>
+      <p data-t="heroSub"></p>
+      <div class="mastery">
+        <div class="mastery-ring"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.9" class="bg"/><circle cx="18" cy="18" r="15.9" class="fg" id="masteryArc"/></svg><b id="masteryNum">0</b></div>
+        <span data-t="mastered"></span>
+      </div>
+    </section>
+
+    <section class="setup">
+      <h2 data-t="scopeTitle"></h2>
+      <div class="chips" id="scopeChips"></div>
+      <h2 data-t="lengthTitle"></h2>
+      <div class="chips" id="lengthChips"></div>
+    </section>
+
+    <section class="modes" id="modes"></section>
+  </main>
+
+  <!-- JOC -->
+  <main id="game" class="screen">
+    <div class="hud">
+      <button class="icon-btn" data-go="home" aria-label="Sortir">✕</button>
+      <div class="progress"><i id="progFill"></i></div>
+      <div class="hud-stats">
+        <span class="streak" id="streak" hidden>🔥 <b>0</b></span>
+        <span class="timer" id="timer" hidden>⏱ <b>60</b></span>
+        <span class="score">⭐ <b id="score">0</b></span>
+      </div>
+    </div>
+
+    <div class="game-body">
+      <div class="map-wrap" id="mapWrap">
+        <svg id="map" role="img" aria-label="Mapa de Catalunya"></svg>
+        <div class="zoom">
+          <button class="icon-btn" id="zIn" aria-label="Apropa">＋</button>
+          <button class="icon-btn" id="zOut" aria-label="Allunya">－</button>
+          <button class="icon-btn" id="zFit" aria-label="Encaixa">⤢</button>
+        </div>
+        <div class="toast" id="toast"></div>
+      </div>
+
+      <aside class="panel" id="panel">
+        <div class="prompt" id="prompt"></div>
+        <div class="options" id="options"></div>
+        <div class="explore-tools" id="exploreTools" hidden>
+          <label class="switch"><input type="checkbox" id="tLabels"><span data-t="showNames"></span></label>
+          <label class="switch"><input type="checkbox" id="tCaps"><span data-t="showCaps"></span></label>
+          <div class="legend" id="legend"></div>
+        </div>
+        <div class="info-card" id="infoCard" hidden></div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- RESULTATS -->
+  <main id="results" class="screen">
+    <div class="result-card">
+      <div class="stars" id="stars"></div>
+      <h2 id="resTitle"></h2>
+      <p class="big-score"><b id="resScore">0</b> <span data-t="points"></span></p>
+      <p id="resDetail"></p>
+      <p class="record" id="resRecord" hidden data-t="newRecord"></p>
+      <div class="mistakes" id="resMistakes"></div>
+      <div class="res-actions">
+        <button class="btn ghost" data-go="home" data-t="menu"></button>
+        <button class="btn ghost" id="btnReviewMistakes" data-t="reviewMistakes"></button>
+        <button class="btn" id="btnAgain" data-t="again"></button>
+      </div>
+    </div>
+  </main>
+
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+  <footer class="foot" data-t="footer"></footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
