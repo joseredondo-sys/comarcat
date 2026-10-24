@@ -25,6 +25,7 @@
         explora: ["Explora", "Toca el mapa i descobreix cada comarca, la capital i la província."],
         on: ["On és?", "Et diem una comarca i l'has de trobar al mapa. Tens 3 intents."],
         quina: ["Quina és?", "S'il·lumina una comarca: endevina com es diu entre 4 opcions."],
+        escriu: ["Escriu-la", "S'il·lumina una comarca i n'has d'escriure el nom. Els accents no compten i tens pistes."],
         capital: ["Capitals", "Quina és la capital de cada comarca? Tria la bona."],
         prov: ["Províncies", "A quina província pertany cada comarca? Barcelona, Girona, Lleida o Tarragona."],
         rellotge: ["Contrarellotge", "60 segons per trobar-ne tantes com puguis. Encerts: +2 s. Errors: −3 s."],
@@ -38,6 +39,8 @@
       resDetail: (c, t, s) => `${c} de ${t} encerts · millor ratxa ${s}`,
       resTimed: (c, s) => `${c} comarques trobades · millor ratxa ${s}`,
       timeUp: "S'ha acabat el temps!", provinceOf: "Província de",
+      typeHere: "Escriu el nom…", check: "Comprova", hint: "Pista", dontKnow: "No ho sé",
+      almost: "Gairebé! S'escriu", notThat: "Aquesta és una altra:", hintLeft: n => `Pista (${n})`,
     },
     es: {
       heroTitle: "Aprende Cataluña jugando",
@@ -54,6 +57,7 @@
         explora: ["Explora", "Toca el mapa y descubre cada comarca, su capital y su provincia."],
         on: ["¿Dónde está?", "Te decimos una comarca y tienes que encontrarla en el mapa. Tienes 3 intentos."],
         quina: ["¿Cuál es?", "Se ilumina una comarca: adivina cómo se llama entre 4 opciones."],
+        escriu: ["Escríbela", "Se ilumina una comarca y tienes que escribir su nombre. Los acentos no cuentan y tienes pistas."],
         capital: ["Capitales", "¿Cuál es la capital de cada comarca? Elige la buena."],
         prov: ["Provincias", "¿A qué provincia pertenece cada comarca? Barcelona, Girona, Lleida o Tarragona."],
         rellotge: ["Contrarreloj", "60 segundos para encontrar todas las que puedas. Aciertos: +2 s. Errores: −3 s."],
@@ -67,12 +71,15 @@
       resDetail: (c, t, s) => `${c} de ${t} aciertos · mejor racha ${s}`,
       resTimed: (c, s) => `${c} comarcas encontradas · mejor racha ${s}`,
       timeUp: "¡Se acabó el tiempo!", provinceOf: "Provincia de",
+      typeHere: "Escribe el nombre…", check: "Comprobar", hint: "Pista", dontKnow: "No lo sé",
+      almost: "¡Casi! Se escribe", notThat: "Esa es otra:", hintLeft: n => `Pista (${n})`,
     },
   };
   const MODES = [
     { id: "explora", emoji: "🧭", color: "#cfe6f2" },
     { id: "on", emoji: "📍", color: "#ffd9c7" },
     { id: "quina", emoji: "🔎", color: "#d8f3e3" },
+    { id: "escriu", emoji: "✍️", color: "#d6ecff" },
     { id: "capital", emoji: "🏛️", color: "#fde9b8" },
     { id: "prov", emoji: "🗺️", color: "#e3dcfb" },
     { id: "rellotge", emoji: "⏱️", color: "#ffd1d3" },
@@ -345,6 +352,7 @@
       return;
     }
     cls(c.id, "target"); ping(c.id);
+    if (G.mode === "escriu") return askWrite(c, L);
     let opts;
     if (G.mode === "quina") {
       pr.innerHTML = `<small>${L.modes.quina[0]}</small>${L.whichCom}`;
@@ -393,6 +401,101 @@
     showLabel(c.id, G.mode === "capital");
     updateHud();
     setTimeout(next, ok ? 750 : 1500);
+  }
+
+  // ---------- Escriu-la ----------
+  // Sense accents, majúscules, apòstrofs ni espais: "pla de lestany" = "Pla de l'Estany"
+  const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z]/g, "");
+  const ALIAS = { "39": ["aran"] };
+  function lev(a, b) {
+    const d = Array.from({ length: b.length + 1 }, (_, j) => j);
+    for (let i = 1; i <= a.length; i++) {
+      let prev = d[0]; d[0] = i;
+      for (let j = 1; j <= b.length; j++) {
+        const tmp = d[j];
+        d[j] = Math.min(d[j] + 1, d[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1));
+        prev = tmp;
+      }
+    }
+    return d[b.length];
+  }
+  const namesOf = c => [norm(c.nom), ...(ALIAS[c.id] || [])];
+  // "exact", "typo" o null. Una errata només val si no s'assembla més a una altra comarca.
+  function matchName(v, c) {
+    if (namesOf(c).includes(v)) return "exact";
+    const dist = x => Math.min(...namesOf(x).map(n => lev(v, n)));
+    const n = norm(c.nom).length, tol = n <= 4 ? 0 : n <= 9 ? 1 : 2;
+    const dc = dist(c);
+    if (dc > tol) return null;
+    return COMS.some(x => x !== c && dist(x) <= dc) ? null : "typo";
+  }
+
+  function askWrite(c, L) {
+    G.hints = 0;
+    const pr = $("#prompt"), op = $("#options");
+    pr.innerHTML = `<small>${L.modes.escriu[0]}</small>${L.whichCom}<div class="attempts" id="att"><i></i><i></i></div>`;
+    op.classList.add("write");
+    op.innerHTML = `<form class="write-form" id="wForm" autocomplete="off">
+        <input id="wIn" type="text" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done" placeholder="${L.typeHere}" aria-label="${L.typeHere}">
+        <button class="btn" type="submit">${L.check}</button></form>
+      <p class="hint write-hint" id="wHintTxt"></p>
+      <div class="write-help"><button type="button" class="btn ghost" id="wHint">💡 ${L.hintLeft(2)}</button><button type="button" class="btn ghost" id="wSkip">${L.dontKnow}</button></div>`;
+    $("#wForm").onsubmit = e => { e.preventDefault(); answerWrite(); };
+    $("#wHint").onclick = writeHint;
+    $("#wSkip").onclick = writeFail;
+    if (matchMedia("(pointer: fine)").matches) $("#wIn").focus();
+  }
+
+  function writeHint() {
+    if (G.locked || G.hints >= 2) return;
+    const c = target(), L = t();
+    G.hints += 1;
+    const show = G.hints === 1 ? 1 : Math.ceil(c.nom.length / 2);
+    let k = 0;
+    $("#wHintTxt").textContent = [...c.nom].map(ch => (/\s|'/.test(ch) ? ch : k++ < show ? ch : "_")).join(" ").replace(/ {3}/g, "   ");
+    $("#wHint").textContent = `💡 ${L.hintLeft(2 - G.hints)}`;
+    $("#wHint").disabled = G.hints >= 2;
+    tone([500], .08, "triangle");
+  }
+
+  function answerWrite() {
+    if (G.locked) return;
+    const c = target(), L = t(), inp = $("#wIn"), v = norm(inp.value);
+    if (!v) return inp.focus();
+    const res = matchName(v, c);
+    if (res) {
+      G.locked = true;
+      toast(res === "typo" ? `${L.almost} ${c.nom}` : L.wellDone, "ok");
+      hit(c, Math.max(20, 100 - 25 * G.hints - 40 * G.attempts - (res === "typo" ? 20 : 0)));
+      cls(c.id, "target", false); cls(c.id, "done"); showLabel(c.id, false);
+      inp.value = c.nom; inp.disabled = true; inp.className = "ok";
+      updateHud();
+      setTimeout(next, res === "typo" ? 1600 : 900);
+      return;
+    }
+    sfx.bad();
+    G.attempts += 1; G.streak = 0; updateHud();
+    document.querySelectorAll("#att i").forEach((n, i) => n.classList.toggle("lost", i >= 2 - G.attempts));
+    inp.className = ""; void inp.offsetWidth; inp.className = "bad";
+    // Si ha escrit una altra comarca, li ensenyem on és
+    const other = COMS.find(x => x !== c && matchName(v, x) === "exact");
+    if (other) {
+      toast(`${L.notThat} ${other.nom}`, "bad");
+      cls(other.id, "flash"); setTimeout(() => cls(other.id, "flash", false), 900);
+    }
+    if (G.attempts >= 2) return writeFail();
+    inp.select();
+  }
+
+  function writeFail() {
+    if (G.locked) return;
+    G.locked = true;
+    const c = target(), inp = $("#wIn");
+    miss(c); sfx.bad();
+    cls(c.id, "target", false); cls(c.id, "miss"); showLabel(c.id, false);
+    inp.value = c.nom; inp.disabled = true; inp.className = "bad";
+    setTimeout(() => toast(`${t().itWas} ${c.nom}`, "bad"), 300);
+    setTimeout(next, 2000);
   }
 
   function onMapTap(id) {
@@ -469,6 +572,8 @@
 
   document.addEventListener("keydown", e => {
     if (!$("#game").classList.contains("active")) return;
+    if (e.key === "Escape") return show("home");
+    if (e.target.tagName === "INPUT") return;
     const n = +e.key;
     if (n >= 1 && n <= 4) { const b = document.querySelectorAll("#options .opt")[n - 1]; if (b && !b.disabled) b.click(); }
     if (e.key === "Escape") show("home");

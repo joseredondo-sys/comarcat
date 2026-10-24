@@ -161,6 +161,18 @@ body:has(#game.active) { height: 100dvh; overflow: hidden; }
 .opt[disabled] { cursor: default; }
 .options.prov { grid-template-columns: 1fr 1fr; }
 .options.prov .opt { justify-content: center; color: #fff; border: 0; padding: 18px 10px; }
+.options.write { grid-template-columns: minmax(0, 1fr); }
+.options.write > * { min-width: 0; }
+.write-form { display: flex; gap: 8px; }
+.write-form input { flex: 1; min-width: 0; width: 100%; border: 2px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 14px; padding: 12px 14px; font: 800 18px var(--font-b); outline: none; }
+.write-form input:focus { border-color: var(--navy); }
+.write-form input.ok { border-color: var(--ok); background: var(--ok); color: #fff; }
+.write-form input.bad { border-color: var(--bad); animation: shake .35s; }
+.write-form .btn { padding: 12px 16px; }
+.write-help { display: flex; gap: 8px; }
+.write-help .btn { flex: 1; font-size: 15px; padding: 10px; }
+.write-help .btn[disabled] { opacity: .45; }
+.write-hint { font-family: ui-monospace, monospace; font-size: 18px; font-weight: 700; color: var(--ink); letter-spacing: .04em; min-height: 1em; white-space: pre-wrap; }
 .btn { border: 0; background: var(--accent); color: #fff; border-radius: 14px; padding: 13px 20px; font-weight: 800; font-size: 17px; box-shadow: 0 4px 0 rgba(0,0,0,.15); }
 .btn:active { transform: translateY(2px); box-shadow: none; }
 .btn.ghost { background: var(--surface); color: var(--ink); border: 2px solid var(--line); box-shadow: none; }
