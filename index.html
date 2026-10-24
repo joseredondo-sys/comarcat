@@ -3,15 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Comarcat · Aprèn les comarques de Catalunya</title>
-  <meta name="description" content="Joc interactiu per aprendre les províncies, comarques i capitals de Catalunya. Sis maneres de jugar, per a mòbil, tauleta i ordinador.">
+  <title>Comarcat · Aprèn les comarques de Catalunya i les províncies d'Espanya</title>
+  <meta name="description" content="Joc interactiu per aprendre les comarques de Catalunya i les províncies d'Espanya, amb les seves capitals. Set maneres de jugar, per a mòbil, tauleta i ordinador.">
   <meta name="theme-color" content="#1d3557">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=2">
 </head>
 <body>
   <header class="topbar">
@@ -31,9 +31,14 @@
 
   <!-- INICI -->
   <main id="home" class="screen active">
+    <section class="games-wrap">
+      <h2 data-t="gamesTitle"></h2>
+      <div class="games" id="games"></div>
+    </section>
+
     <section class="hero">
-      <h1 data-t="heroTitle"></h1>
-      <p data-t="heroSub"></p>
+      <h1 id="heroTitle"></h1>
+      <p id="heroSub"></p>
       <div class="mastery">
         <div class="mastery-ring"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.9" class="bg"/><circle cx="18" cy="18" r="15.9" class="fg" id="masteryArc"/></svg><b id="masteryNum">0</b></div>
         <span data-t="mastered"></span>
@@ -107,7 +112,7 @@
 
   <footer class="foot" data-t="footer"></footer>
 
-  <script src="js/data.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/data.js?v=2"></script>
+  <script src="js/app.js?v=2"></script>
 </body>
 </html>
