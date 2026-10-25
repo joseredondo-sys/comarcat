@@ -76,6 +76,14 @@ h1, h2, h3 { font-family: var(--font-d); margin: 0; }
 .mastery-ring .fg { stroke: var(--ok); stroke-linecap: round; stroke-dasharray: 0 100; transition: stroke-dasharray .8s; }
 .mastery-ring b { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-d); font-size: 20px; color: var(--ink); }
 
+.no-lines .prov-line { display: none; }
+.levels { margin-top: 14px; }
+.levels h2 { margin-bottom: 8px; }
+.levels .chip { font-size: 16px; padding: 10px 18px; }
+.found-count { font-family: var(--font-d); font-size: 22px; margin: 6px 0 4px; }
+.found-count b { color: var(--ok); }
+.provs-list { margin: 8px 0 0; font-family: var(--font-b); font-size: 15px; font-weight: 800; color: var(--navy); background: color-mix(in srgb, var(--ok) 14%, transparent); border-radius: 12px; padding: 8px 12px; animation: fade .25s; }
+@media (prefers-color-scheme: dark) { .provs-list { color: var(--ink); } }
 .games-wrap h2 { font-size: 16px; color: var(--muted); font-weight: 600; margin: 0 0 8px; }
 .games { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .game-card { display: flex; align-items: center; gap: 14px; text-align: left; border: 3px solid transparent; background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); padding: 12px 16px; transition: transform .15s, border-color .15s; }

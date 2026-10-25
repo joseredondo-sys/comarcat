@@ -30,7 +30,23 @@
             source: "Eurostat GISCO, NUTS 2024",
             capDesc: "Las capitales que no se llaman igual que su provincia: Vitoria, Bilbao, Oviedo, Pamplona…" },
     },
+    // Espanya, nivell "només comunitats autònomes"
+    ccaa: {
+      ca: { one: "comunitat", many: "comunitats", grp: "comunitat autònoma", Grps: "Comunitats", all: "Tota Espanya",
+            game: "Províncies d'Espanya", hash: "comunitats",
+            title: "Aprèn les comunitats autònomes", sub: "Les 17 comunitats autònomes i les ciutats de Ceuta i Melilla, amb les seves capitals i províncies. Tria a què vols jugar.",
+            source: "Eurostat GISCO, NUTS 2024",
+            exploreDesc: "Toca el mapa i descobreix cada comunitat, la seva capital i les seves províncies." },
+      es: { one: "comunidad", many: "comunidades", grp: "comunidad autónoma", Grps: "Comunidades", all: "Toda España",
+            game: "Provincias de España", hash: "comunitats",
+            title: "Aprende las comunidades autónomas", sub: "Las 17 comunidades autónomas y las ciudades de Ceuta y Melilla, con sus capitales y provincias. Elige a qué quieres jugar.",
+            source: "Eurostat GISCO, NUTS 2024",
+            exploreDesc: "Toca el mapa y descubre cada comunidad, su capital y sus provincias." },
+    },
   };
+  // Jocs que surten com a targeta a l'inici; Espanya té dos nivells
+  const FAMILY = { cat: "cat", esp: "esp", ccaa: "esp" };
+  const LEVELS = { esp: ["esp", "ccaa"] };
 
   const T = {
     ca: N => ({
@@ -44,7 +60,9 @@
       footer: `Dades geogràfiques: ${N.source}.`,
       best: "Rècord", noBest: "Encara sense rècord",
       modes: {
-        explora: ["Explora", `Toca el mapa i descobreix cada ${N.one}, la seva capital i la ${N.grp}.`],
+        explora: ["Explora", N.exploreDesc || `Toca el mapa i descobreix cada ${N.one}, la seva capital i la ${N.grp}.`],
+        quantes: ["Quantes províncies?", "S'il·lumina una comunitat i has de dir quantes províncies té. Després veus quines són."],
+        completa: ["Completa-la", "Et diem una comunitat autònoma i has de tocar totes les seves províncies al mapa. Tens 3 errors."],
         on: ["On és?", `Et diem una ${N.one} i l'has de trobar al mapa. Tens 3 intents.`],
         quina: ["Quina és?", `S'il·lumina una ${N.one}: endevina com es diu entre 4 opcions.`],
         escriu: ["Escriu-la", `S'il·lumina una ${N.one} i n'has d'escriure el nom. Els accents no compten i tens pistes.`],
@@ -63,6 +81,9 @@
       timeUp: "S'ha acabat el temps!",
       typeHere: "Escriu el nom…", check: "Comprova", dontKnow: "No ho sé",
       almost: "Gairebé! S'escriu", notThat: "Aquesta és una altra:", hintLeft: n => `Pista (${n})`,
+      levelTitle: "Què estudies d'Espanya?", levels: { esp: "Províncies", ccaa: "Comunitats autònomes" },
+      howMany: "Quantes províncies té", provsLabel: "Províncies", tapAll: "Toca totes les províncies de",
+      isFrom: g => `→ ${g}`, alreadyFound: "Aquesta ja la tens!",
     }),
     es: N => ({
       gamesTitle: "¿Qué quieres estudiar?",
@@ -75,7 +96,9 @@
       footer: `Datos geográficos: ${N.source}.`,
       best: "Récord", noBest: "Aún sin récord",
       modes: {
-        explora: ["Explora", `Toca el mapa y descubre cada ${N.one}, su capital y su ${N.grp}.`],
+        explora: ["Explora", N.exploreDesc || `Toca el mapa y descubre cada ${N.one}, su capital y su ${N.grp}.`],
+        quantes: ["¿Cuántas provincias?", "Se ilumina una comunidad y tienes que decir cuántas provincias tiene. Después ves cuáles son."],
+        completa: ["Complétala", "Te decimos una comunidad autónoma y tienes que tocar todas sus provincias en el mapa. Tienes 3 errores."],
         on: ["¿Dónde está?", `Te decimos una ${N.one} y tienes que encontrarla en el mapa. Tienes 3 intentos.`],
         quina: ["¿Cuál es?", `Se ilumina una ${N.one}: adivina cómo se llama entre 4 opciones.`],
         escriu: ["Escríbela", `Se ilumina una ${N.one} y tienes que escribir su nombre. Los acentos no cuentan y tienes pistas.`],
@@ -94,6 +117,9 @@
       timeUp: "¡Se acabó el tiempo!",
       typeHere: "Escribe el nombre…", check: "Comprobar", dontKnow: "No lo sé",
       almost: "¡Casi! Se escribe", notThat: "Esa es otra:", hintLeft: n => `Pista (${n})`,
+      levelTitle: "¿Qué estudias de España?", levels: { esp: "Provincias", ccaa: "Comunidades autónomas" },
+      howMany: "¿Cuántas provincias tiene", provsLabel: "Provincias", tapAll: "Toca todas las provincias de",
+      isFrom: g => `→ ${g}`, alreadyFound: "¡Esa ya la tienes!",
     }),
   };
   const MODES = [
@@ -102,9 +128,12 @@
     { id: "quina", emoji: "🔎", color: "#d8f3e3" },
     { id: "escriu", emoji: "✍️", color: "#d6ecff" },
     { id: "capital", emoji: "🏛️", color: "#fde9b8" },
-    { id: "prov", emoji: "🗺️", color: "#e3dcfb" },
+    { id: "prov", emoji: "🗺️", color: "#e3dcfb", not: ["ccaa"] },
+    { id: "completa", emoji: "🧩", color: "#d9f99d", only: ["esp"] },
+    { id: "quantes", emoji: "🔢", color: "#fbcfe8", only: ["ccaa"] },
     { id: "rellotge", emoji: "⏱️", color: "#ffd1d3" },
   ];
+  const modesOf = game => MODES.filter(m => (!m.only || m.only.includes(game)) && !(m.not || []).includes(game));
 
   // ---------- Estat persistent ----------
   const KEY = "comarcat-v1";
@@ -128,6 +157,7 @@
 
   function setGame(id) {
     S.game = id;
+    if (FAMILY[id] === "esp") S.lastEsp = id;
     GAME = GAMES[id];
     ITEMS = GAME.items;
     BY_ID = Object.fromEntries(ITEMS.map(c => [c.id, c]));
@@ -145,9 +175,12 @@
   const scopes = () => ["all", ...GAME.groups.filter(g => grpSize(g.id) > 1).map(g => g.id)];
   // Per a Espanya, la majoria de capitals es diuen com la província: només preguntem les que no
   const capitalPool = () => ITEMS.filter(c => norm(capOf(c)) !== norm(name(c)));
-  const scopeOf = mode => (mode === "prov" || (mode === "capital" && capitalPool().length < ITEMS.length) ? "all" : P().scope);
+  const scopeOf = mode => (["prov", "completa"].includes(mode) || (mode === "capital" && capitalPool().length < ITEMS.length) ? "all" : P().scope);
   function poolFor(mode) {
     const scope = scopeOf(mode);
+    // A "Completa-la" es pregunta per grups (comunitats) i es responen tocant-ne els elements (províncies)
+    if (mode === "completa") return GAME.groups.filter(g => grpSize(g.id) > 1);
+    if (mode === "quantes") return ITEMS.filter(c => c.provs && c.provs.length);
     let pool = ITEMS.filter(c => scope === "all" || c.grp === scope);
     if (mode === "capital") pool = pool.filter(c => capitalPool().includes(c));
     if (mode === "prov") pool = pool.filter(c => grpSize(c.grp) > 1);
@@ -332,14 +365,29 @@
     const L = t();
 
     const gb = $("#games"); gb.innerHTML = "";
-    for (const id in GAMES) {
+    const fam = FAMILY[S.game];
+    for (const id of ["cat", "esp"]) {
       const n = NOUNS[id][S.lang];
       const b = document.createElement("button");
-      b.className = "game-card" + (S.game === id ? " on" : "");
+      b.className = "game-card" + (fam === id ? " on" : "");
       b.innerHTML = `${miniMaps[id]}<span><b>${n.game}</b><small>${n.gameDesc}</small></span>`;
-      b.onclick = () => { if (S.game !== id) { setGame(id); save(); renderHome(); } };
+      b.onclick = () => { if (fam !== id) { setGame(id === "esp" && S.lastEsp ? S.lastEsp : id); save(); renderHome(); } };
       gb.append(b);
     }
+    // Nivell dins d'Espanya: províncies o només comunitats
+    const lv = $("#levels"); lv.innerHTML = "";
+    lv.hidden = !LEVELS[fam];
+    if (LEVELS[fam]) {
+      lv.innerHTML = `<h2>${L.levelTitle}</h2><div class="chips"></div>`;
+      LEVELS[fam].forEach(id => {
+        const b = document.createElement("button");
+        b.className = "chip" + (S.game === id ? " on" : "");
+        b.textContent = L.levels[id];
+        b.onclick = () => { if (S.game !== id) { setGame(id); S.lastEsp = id; save(); renderHome(); } };
+        lv.querySelector(".chips").append(b);
+      });
+    }
+    $("#scopeBox").hidden = scopes().length < 2;
 
     const m = ITEMS.filter(c => isMastered(c.id)).length;
     $("#masteryNum").textContent = m;
@@ -364,7 +412,7 @@
     });
 
     const box = $("#modes"); box.innerHTML = "";
-    MODES.forEach(md => {
+    modesOf(S.game).forEach(md => {
       const [mname, desc] = L.modes[md.id];
       const b = document.createElement("button");
       b.className = "mode";
@@ -405,6 +453,8 @@
     resetMapClasses();
     ITEMS.forEach(c => cls(c.id, "off", scope !== "all" && c.grp !== scope));
     $("#mapWrap").classList.toggle("map-neutral", mode !== "explora");
+    // A "Completa-la" les vores de les comunitats donarien la resposta
+    $("#mapWrap").classList.toggle("no-lines", mode === "completa");
     exploreSel = null; exploreGrp = null;
     $("#tLabels").checked = $("#tCaps").checked = false;
     requestAnimationFrame(() => fitTo(ITEMS.filter(c => scope === "all" || c.grp === scope).map(c => c.id)));
@@ -456,10 +506,23 @@
       if (G.mode === "on") pr.innerHTML += `<div class="attempts" id="att"><i></i><i></i><i></i></div>`;
       return;
     }
+    if (G.mode === "completa") {
+      // Cada comunitat comença amb el mapa net
+      G.found = new Set();
+      ITEMS.forEach(x => { cls(x.id, "done", false); cls(x.id, "miss", false); labels[x.id].tx.style.display = "none"; });
+      pr.innerHTML = `<small>${L.modes.completa[0]}</small>${L.tapAll}<span class="name">${grpName(c.id)}</span>
+        <div class="found-count"><b id="foundN">0</b> / ${grpSize(c.id)}</div><div class="attempts" id="att"><i></i><i></i><i></i></div>`;
+      return;
+    }
     cls(c.id, "target"); ping(c.id);
     if (G.mode === "escriu") return askWrite(c, L);
     let opts;
-    if (G.mode === "quina") {
+    if (G.mode === "quantes") {
+      pr.innerHTML = `<small>${L.modes.quantes[0]}</small>${L.howMany}<span class="name">${name(c)}?</span>`;
+      const n = c.provs.length;
+      const wrong = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9].filter(x => x !== n && Math.abs(x - n) <= 4)).slice(0, 3);
+      opts = [n, ...wrong].sort((a, b) => a - b).map(x => ({ label: String(x), ok: x === n }));
+    } else if (G.mode === "quina") {
       pr.innerHTML = `<small>${L.modes.quina[0]}</small>${L.whichCom}`;
       opts = shuffle([c, ...distractors(c, G.pool)]).map(x => ({ label: name(x), ok: x === c }));
     } else if (G.mode === "capital") {
@@ -507,7 +570,41 @@
     cls(c.id, "target", false);
     showLabel(c.id, G.mode === "capital");
     updateHud();
+    // A "Quantes províncies?" s'ensenya quines són abans de passar a la següent
+    if (G.mode === "quantes") {
+      $("#prompt").insertAdjacentHTML("beforeend", `<p class="provs-list">${provList(c)}</p>`);
+      return setTimeout(next, 2400);
+    }
     setTimeout(next, ok ? 750 : 1500);
+  }
+  const provList = c => c.provs.map(nm).sort((a, b) => a.localeCompare(b, S.lang)).join(" · ");
+
+  // ---------- Completa-la ----------
+  function tapCompleta(id) {
+    const g = target(), L = t(), tapped = BY_ID[id];
+    if (G.found.has(id)) return toast(L.alreadyFound);
+    if (tapped.grp === g.id) {
+      G.found.add(id);
+      cls(id, "done"); showLabel(id, false);
+      $("#foundN").textContent = G.found.size;
+      if (G.found.size < grpSize(g.id)) return tone([620 + G.found.size * 60], .1, "triangle");
+      G.locked = true;
+      hit(g, Math.max(20, 100 - 30 * G.attempts));
+      toast(L.wellDone, "ok");
+      updateHud();
+      return setTimeout(next, 1100);
+    }
+    sfx.bad();
+    paths[id].classList.remove("flash"); void paths[id].getBBox(); cls(id, "flash");
+    setTimeout(() => cls(id, "flash", false), 700);
+    toast(`${name(tapped)} ${L.isFrom(grpName(tapped.grp))}`, "bad");
+    G.attempts += 1; G.streak = 0; updateHud();
+    document.querySelectorAll("#att i").forEach((n, i) => n.classList.toggle("lost", i >= 3 - G.attempts));
+    if (G.attempts >= 3) {
+      G.locked = true; miss(g);
+      ITEMS.filter(x => x.grp === g.id && !G.found.has(x.id)).forEach(x => { cls(x.id, "miss"); showLabel(x.id, false); });
+      setTimeout(next, 2200);
+    }
   }
 
   // ---------- Escriu-la ----------
@@ -608,6 +705,7 @@
   function onMapTap(id) {
     if (!G) return;
     if (G.mode === "explora") return exploreSelect(id);
+    if (G.mode === "completa" && !G.locked) return tapCompleta(id);
     if (G.locked || !(G.mode === "on" || G.mode === "rellotge")) return;
     const c = target(), tapped = BY_ID[id];
     if (paths[id].classList.contains("done") && id !== c.id && G.mode === "on") { toast(`${t().thatIs} ${name(tapped)}`); return; }
@@ -669,7 +767,7 @@
     $("#resScore").textContent = G.score;
     $("#resDetail").textContent = G.mode === "rellotge" ? L.resTimed(G.correct, G.bestStreak) : L.resDetail(G.correct, total, G.bestStreak);
     $("#resRecord").hidden = !record;
-    $("#resMistakes").innerHTML = G.errors.map(id => `<span>${name(BY_ID[id])}</span>`).join("");
+    $("#resMistakes").innerHTML = G.errors.map(id => `<span>${BY_ID[id] ? name(BY_ID[id]) : grpName(id)}</span>`).join("");
     $("#btnReviewMistakes").hidden = !G.errors.length;
     sfx.end();
     if (stars >= 2 || record) confetti();
@@ -695,7 +793,10 @@
     GAME.groups.slice().sort((a, b) => grpName(a.id).localeCompare(grpName(b.id), S.lang)).forEach(g => {
       const b = document.createElement("button");
       b.className = exploreGrp === g.id ? "on" : "";
-      b.innerHTML = `<i style="background:${g.color}"></i>${grpName(g.id)} · ${grpSize(g.id)}`;
+      // A "comunitats" cada grup és un sol element: hi posem quantes províncies té
+      const it = ITEMS.find(c => c.grp === g.id);
+      const count = it && it.provs ? it.provs.length : grpSize(g.id);
+      b.innerHTML = `<i style="background:${g.color}"></i>${grpName(g.id)}${count ? ` · ${count}` : ""}`;
       b.onclick = () => {
         exploreGrp = exploreGrp === g.id ? null : g.id;
         const ids = ITEMS.filter(c => !exploreGrp || c.grp === exploreGrp).map(c => c.id);
@@ -728,8 +829,10 @@
     const card = $("#infoCard");
     card.hidden = false;
     card.innerHTML = `<h3>${name(c)}</h3>
-      <div><span class="tag" style="background:${grpColor(c.grp)}">${grpName(c.grp)}</span> ${isMastered(id) ? `<span class="tag" style="background:var(--ok)">${L.masteredTag}</span>` : ""}</div>
-      <dl><dt>${L.capital}</dt><dd>${capOf(c)}</dd><dt>${L.group}</dt><dd>${grpName(c.grp)}</dd><dt>${L.area}</dt><dd>${c.approx ? "≈ " : ""}${c.area.toLocaleString(S.lang)} km²</dd></dl>`;
+      <div>${c.provs ? "" : `<span class="tag" style="background:${grpColor(c.grp)}">${grpName(c.grp)}</span> `}${isMastered(id) ? `<span class="tag" style="background:var(--ok)">${L.masteredTag}</span>` : ""}</div>
+      <dl><dt>${L.capital}</dt><dd>${capOf(c)}</dd>${c.provs
+        ? (c.provs.length ? `<dt>${L.provsLabel} (${c.provs.length})</dt><dd>${provList(c)}</dd>` : "")
+        : `<dt>${L.group}</dt><dd>${grpName(c.grp)}</dd>`}<dt>${L.area}</dt><dd>${c.approx ? "≈ " : ""}${c.area.toLocaleString(S.lang)} km²</dd></dl>`;
   }
 
   // ---------- Confeti ----------

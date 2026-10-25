@@ -312,10 +312,55 @@ def build_espanya():
               for gid, es, ca, color in COMUNITATS.values()]
     groups.sort(key=lambda g: g["nom"]["es"])
     assert len(items) == 52
-    return {"w": WIDTH, "h": proj.h, "items": items, "groups": groups, "outlines": outlines, "frames": [frame]}
+    esp = {"w": WIDTH, "h": proj.h, "items": items, "groups": groups, "outlines": outlines, "frames": [frame]}
+
+    # Nivell "només comunitats": mateixa projecció perquè el mapa encaixi igual
+    ccaa = []
+    for f in n2:
+        nid = f["properties"]["NUTS_ID"]
+        gid, es, ca, color = COMUNITATS[nid]
+        ine, cap_es, cap_ca, alias = CCAA_INFO[gid]
+        polys = polys_of(f["geometry"])
+        area = geo_area_km2(polys)
+        provs = [{"es": p[1], "ca": p[2]} for key, p in PROVINCIES.items() if key[:4] == nid and p[0] not in ("51", "52")]
+        it = item(ine, {"es": es, "ca": ca}, {"es": cap_es, "ca": cap_ca}, gid,
+                  shift_canaries(polys) if nid == "ES70" else polys, proj,
+                  round(area, -2) if area > 500 else round(area), alias)
+        it["approx"] = 1
+        it["provs"] = sorted(provs, key=lambda p: p["es"])
+        ccaa.append(it)
+    ccaa.sort(key=lambda x: x["id"])
+    assert len(ccaa) == 19
+    ccaa_game = {"w": WIDTH, "h": proj.h, "items": ccaa, "groups": groups, "outlines": [], "frames": [frame]}
+    return esp, ccaa_game
 
 
-games = {"cat": build_catalunya(), "esp": build_espanya()}
+# Comunitats: codi INE, capital (es, ca) i àlies per escriure-les
+CCAA_INFO = {
+    "AN": ("01", "Sevilla", "Sevilla", []),
+    "AR": ("02", "Zaragoza", "Saragossa", []),
+    "AS": ("03", "Oviedo", "Oviedo", ["Principado de Asturias"]),
+    "IB": ("04", "Palma", "Palma", ["Baleares", "Balears"]),
+    "CN": ("05", "Las Palmas de Gran Canaria y Santa Cruz de Tenerife",
+           "Las Palmas de Gran Canària i Santa Cruz de Tenerife", ["Canarias", "Islas Canarias"]),
+    "CB": ("06", "Santander", "Santander", []),
+    "CL": ("07", "Valladolid", "Valladolid", []),
+    "CM": ("08", "Toledo", "Toledo", []),
+    "CT": ("09", "Barcelona", "Barcelona", []),
+    "VC": ("10", "Valencia", "València", ["País Valencià", "Comunidad Valenciana"]),
+    "EX": ("11", "Mérida", "Mèrida", []),
+    "GA": ("12", "Santiago de Compostela", "Santiago de Compostel·la", []),
+    "MD": ("13", "Madrid", "Madrid", ["Madrid"]),
+    "MC": ("14", "Murcia", "Múrcia", ["Murcia", "Múrcia"]),
+    "NC": ("15", "Pamplona", "Pamplona", ["Comunidad Foral de Navarra"]),
+    "PV": ("16", "Vitoria-Gasteiz", "Vitòria", ["Euskadi"]),
+    "RI": ("17", "Logroño", "Logronyo", ["Rioja"]),
+    "CE": ("18", "Ceuta", "Ceuta", []),
+    "ML": ("19", "Melilla", "Melilla", []),
+}
+
+esp_game, ccaa_game = build_espanya()
+games = {"cat": build_catalunya(), "esp": esp_game, "ccaa": ccaa_game}
 OUT.write_text(
     "// Generat per tools/build_data.py (ICGC 2026-01-20 per a Catalunya; Eurostat GISCO NUTS 2024 per a Espanya)\n"
     f"window.GAMES = {json.dumps(games, ensure_ascii=False, separators=(',', ':'))};\n",

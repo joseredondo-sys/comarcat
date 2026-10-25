@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=2">
+  <link rel="stylesheet" href="css/styles.css?v=3">
 </head>
 <body>
   <header class="topbar">
@@ -34,6 +34,7 @@
     <section class="games-wrap">
       <h2 data-t="gamesTitle"></h2>
       <div class="games" id="games"></div>
+      <div class="levels" id="levels" hidden></div>
     </section>
 
     <section class="hero">
@@ -46,8 +47,10 @@
     </section>
 
     <section class="setup">
-      <h2 data-t="scopeTitle"></h2>
-      <div class="chips" id="scopeChips"></div>
+      <div id="scopeBox">
+        <h2 data-t="scopeTitle"></h2>
+        <div class="chips" id="scopeChips"></div>
+      </div>
       <h2 data-t="lengthTitle"></h2>
       <div class="chips" id="lengthChips"></div>
     </section>
@@ -112,7 +115,7 @@
 
   <footer class="foot" data-t="footer"></footer>
 
-  <script src="js/data.js?v=2"></script>
-  <script src="js/app.js?v=2"></script>
+  <script src="js/data.js?v=3"></script>
+  <script src="js/app.js?v=3"></script>
 </body>
 </html>
